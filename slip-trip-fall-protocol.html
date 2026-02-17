@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slip, Trip &amp; Fall Protocol</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  /* ── Hero banner ── */
+  .hero {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-bottom: 3px solid #f59e0b;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: #f59e0b;
+    color: #0f172a;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 0.85rem;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .hero h1 span { color: #f59e0b; }
+  .hero p { color: #94a3b8; font-size: 0.9rem; max-width: 520px; margin: 0 auto; line-height: 1.5; }
+
+  /* ── Tabs ── */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    background: #1e293b;
+    padding: 0.5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid #334155;
+  }
+  .tab {
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: #e2e8f0; background: #334155; }
+  .tab.active { color: #f59e0b; background: #334155; }
+
+  /* ── Content area ── */
+  .content { max-width: 740px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Decision Tree Card ── */
+  .dt-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.35s ease;
+  }
+  .dt-step {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #f59e0b; margin-bottom: 0.75rem;
+  }
+  .dt-question {
+    font-size: 1.1rem; font-weight: 700; color: #f1f5f9;
+    line-height: 1.45; margin-bottom: 1.25rem;
+  }
+  .dt-btn-row { display: flex; gap: 0.65rem; flex-wrap: wrap; }
+  .dt-btn {
+    flex: 1; min-width: 130px;
+    padding: 0.85rem 1rem;
+    border: 2px solid #334155;
+    border-radius: 10px;
+    background: #0f172a;
+    font-family: inherit; font-size: 0.88rem; font-weight: 500;
+    color: #cbd5e1; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .dt-btn:hover { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.08); }
+  .dt-btn:active { transform: scale(0.97); }
+
+  /* ── Outcomes ── */
+  .outcome-card {
+    border-left: 5px solid;
+    border-radius: 14px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.35s ease;
+  }
+  .outcome-card.red { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+  .outcome-card.amber { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+  .outcome-card.green { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+  .outcome-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+  .outcome-card h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .outcome-card.red h2 { color: #f87171; }
+  .outcome-card.amber h2 { color: #fbbf24; }
+  .outcome-card.green h2 { color: #4ade80; }
+  .outcome-card p { font-size: 0.88rem; line-height: 1.6; color: #94a3b8; }
+  .outcome-card ul { margin: 0.75rem 0 0 1.25rem; font-size: 0.88rem; line-height: 1.7; color: #94a3b8; }
+  .outcome-card li { margin-bottom: 0.2rem; }
+
+  .restart-btn {
+    margin-top: 1.25rem; padding: 0.6rem 1.25rem; border-radius: 8px;
+    border: 2px solid #334155; background: transparent; color: #cbd5e1;
+    font-family: inherit; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .restart-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+
+  /* ── Cheat Sheet Table ── */
+  .cheat-title { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin-bottom: 1rem; }
+  .cheat-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid #334155;
+  }
+  .cheat-table thead th {
+    background: #334155; color: #f59e0b;
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 0.85rem 1rem; text-align: left;
+  }
+  .cheat-table tbody td {
+    background: #1e293b; padding: 0.8rem 1rem;
+    font-size: 0.88rem; color: #cbd5e1;
+    border-top: 1px solid #293548;
+  }
+  .cheat-table tbody tr:hover td { background: #263044; }
+  .facility-tag {
+    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+
+  /* ── Pro-Tip box ── */
+  .protip {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.5rem;
+  }
+  .protip-label {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #f59e0b; margin-bottom: 0.6rem;
+  }
+  .protip h3 { font-size: 1rem; font-weight: 700; color: #fbbf24; margin-bottom: 0.5rem; }
+  .protip p { font-size: 0.88rem; color: #94a3b8; line-height: 1.6; }
+  .protip .rule {
+    margin-top: 0.75rem; padding: 0.75rem 1rem;
+    background: rgba(245,158,11,0.08); border-radius: 8px;
+    font-size: 0.85rem; color: #cbd5e1; line-height: 1.55;
+  }
+  .protip .rule strong { color: #fbbf24; }
+
+  .disclaimer {
+    margin-top: 2rem; padding: 1rem 1.25rem;
+    border: 1px solid #334155; border-radius: 10px;
+    font-size: 0.75rem; color: #64748b; line-height: 1.55; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Workplace Safety</div>
+  <h1>Slip, Trip &amp; Fall <span>Protocol</span></h1>
+  <p>An interactive triage tool for when gravity is the primary hazard. Click through the decision tree or reference the cheat sheet.</p>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" data-tab="tree">Decision Tree</button>
+  <button class="tab" data-tab="cheat">Cheat Sheet</button>
+  <button class="tab" data-tab="tips">Pro Tips</button>
+</div>
+
+<div class="content">
+
+  <!-- ═══ PANEL 1: Decision Tree ═══ -->
+  <div class="panel active" id="panel-tree">
+    <div id="dt-content"></div>
+  </div>
+
+  <!-- ═══ PANEL 2: Cheat Sheet ═══ -->
+  <div class="panel" id="panel-cheat">
+    <p class="cheat-title">Common Injury Cheat Sheet</p>
+    <table class="cheat-table">
+      <thead>
+        <tr><th>Type of Fall</th><th>Symptoms</th><th>Send To</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>The "Hard" Fall</strong></td>
+          <td>Hit head, "saw stars," or brief black-out</td>
+          <td><span class="facility-tag tag-red">ER &mdash; Concussion Protocol</span></td>
+        </tr>
+        <tr>
+          <td><strong>The "Twist"</strong></td>
+          <td>Ankle or knee popped; swelling started immediately</td>
+          <td><span class="facility-tag tag-amber">Occupational Clinic</span></td>
+        </tr>
+        <tr>
+          <td><strong>The "Catch"</strong></td>
+          <td>Tripped and caught themselves; shoulder or wrist hurts</td>
+          <td><span class="facility-tag tag-amber">Occupational Clinic</span></td>
+        </tr>
+        <tr>
+          <td><strong>The "Skid"</strong></td>
+          <td>Slipped on floor; minor carpet burn or bruise</td>
+          <td><span class="facility-tag tag-green">On-Site First Aid</span></td>
+        </tr>
+        <tr>
+          <td><strong>The "Back Strain"</strong></td>
+          <td>Slipped but didn't fall; back feels tight or pulled</td>
+          <td><span class="facility-tag tag-amber">Clinic (if pain persists &gt;2 hrs)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ PANEL 3: Pro Tips ═══ -->
+  <div class="panel" id="panel-tips">
+    <div class="protip">
+      <div class="protip-label">Pro Tip</div>
+      <h3>The "Wait and See" Danger</h3>
+      <p>Adrenaline is a liar. After a fall, an employee might say "I'm fine, just embarrassed!" only to wake up the next morning unable to move their neck or back.</p>
+      <div class="rule">
+        <strong>Supervisor Rule:</strong> If an employee has a significant fall, even if they claim they are fine, mandate a <strong>"Light Duty Only"</strong> period for the remainder of the shift and a <strong>mandatory follow-up call 4 hours later</strong> to check for delayed swelling or stiffness.
+      </div>
+    </div>
+    <div class="protip" style="margin-top:1rem;">
+      <div class="protip-label">Documentation Reminder</div>
+      <h3>Always File an Incident Report</h3>
+      <p>Even if the injury seems minor, OSHA requires documentation. Capture the location, time, conditions (wet floor, loose cable, poor lighting), witnesses, and any first aid administered. Photos of the scene are invaluable.</p>
+    </div>
+    <div class="protip" style="margin-top:1rem;">
+      <div class="protip-label">Prevention</div>
+      <h3>Root Cause Follow-Up</h3>
+      <p>Every slip, trip, or fall is a near-miss for something worse. Within 24 hours, conduct a brief root-cause review: Was there a spill? A loose mat? Poor lighting? Fix the hazard before the next shift.</p>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> This tool is a general guide and does not replace professional medical judgment. When in doubt, always err on the side of higher-level care. Follow your organization's emergency action plan and OSHA requirements.
+  </div>
+</div>
+
+<script>
+/* ── Tab Switching ── */
+var tabs = document.querySelectorAll(".tab");
+for (var t = 0; t < tabs.length; t++) {
+  tabs[t].addEventListener("click", function() {
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+    this.classList.add("active");
+    var panels = document.querySelectorAll(".panel");
+    for (var j = 0; j < panels.length; j++) panels[j].classList.remove("active");
+    document.getElementById("panel-" + this.getAttribute("data-tab")).classList.add("active");
+  });
+}
+
+/* ── Decision Tree Data ── */
+var dtTree = {
+  start: {
+    step: 1,
+    label: "Assess the Landing",
+    question: "Was there a head impact?",
+    options: [
+      { label: "YES \u2014 Head was struck or hit the ground", next: "q_redflags" },
+      { label: "NO \u2014 No head impact", next: "q_weight" }
+    ]
+  },
+  q_redflags: {
+    step: "1a",
+    label: "Head Impact \u2014 Red Flags",
+    question: "Are any of these \"Red Flags\" present? Loss of consciousness (even briefly), vomiting, confusion or disorientation, pupils of different sizes.",
+    options: [
+      { label: "YES \u2014 One or more red flags present", next: "out_911" },
+      { label: "NO \u2014 Alert and oriented, no red flags", next: "out_er_concussion" }
+    ]
+  },
+  q_weight: {
+    step: 2,
+    label: "Physical Assessment",
+    question: "Can the employee bear weight on the affected limb or move it through a normal range of motion?",
+    options: [
+      { label: "NO \u2014 Cannot walk, joint looks deformed, or extreme swelling", next: "q_fracture_vs_sprain" },
+      { label: "YES \u2014 Can move, but with some difficulty or pain", next: "q_point_tender" },
+      { label: "YES \u2014 Moving normally", next: "q_point_tender" }
+    ]
+  },
+  q_fracture_vs_sprain: {
+    step: "2a",
+    label: "Severity Check",
+    question: "Does the limb look visibly deformed, or is the pain so severe the employee cannot move it at all?",
+    options: [
+      { label: "YES \u2014 Visible deformity or complete inability to move", next: "out_er_fracture" },
+      { label: "NO \u2014 Major swelling but no obvious deformity", next: "out_clinic_urgent" }
+    ]
+  },
+  q_point_tender: {
+    step: 3,
+    label: "Point Tenderness Check",
+    question: "Is there \"point tenderness\" (sharp pain localized to one specific bone or ligament) or significant bruising in one area?",
+    options: [
+      { label: "YES \u2014 Sharp, localized pain or significant bruising", next: "out_clinic_xray" },
+      { label: "NO \u2014 General soreness, minor scrapes, just shaken up", next: "out_firstaid" }
+    ]
+  },
+
+  /* ── Outcomes ── */
+  out_911: {
+    type: "outcome", level: "red", icon: "\ud83d\udea8",
+    title: "Call 911 \u2014 Emergency Services",
+    description: "Head injuries with red-flag symptoms are non-negotiable emergencies.",
+    actions: [
+      "Call 911 immediately. Do not wait.",
+      "Do NOT move the employee \u2014 suspect cervical spine injury.",
+      "Keep the person still, calm, and monitored.",
+      "Designate someone to guide EMS to the location.",
+      "Begin incident documentation once the scene is stabilized."
+    ]
+  },
+  out_er_concussion: {
+    type: "outcome", level: "red", icon: "\ud83c\udfe5",
+    title: "Emergency Room \u2014 Concussion Protocol",
+    description: "Any head impact warrants ER evaluation even without red flags, as concussion symptoms can be delayed.",
+    actions: [
+      "Do not allow the employee to drive themselves.",
+      "Transport via designated driver or ambulance if symptoms develop.",
+      "No food or drink until medically cleared.",
+      "Mandate Light Duty upon return, pending medical clearance.",
+      "Follow up within 4 hours and again the next day."
+    ]
+  },
+  out_er_fracture: {
+    type: "outcome", level: "red", icon: "\ud83c\udfe5",
+    title: "Emergency Room \u2014 Suspected Fracture / Dislocation",
+    description: "Visible deformity or complete loss of function suggests a fracture or dislocation requiring ER imaging and treatment.",
+    actions: [
+      "Immobilize the limb \u2014 splint in the position found.",
+      "Apply ice wrapped in cloth (never directly on skin).",
+      "Arrange ambulance transport if the employee cannot be safely moved.",
+      "Bring workers\u2019 comp paperwork and incident documentation.",
+      "Do not attempt to \"reset\" any joint."
+    ]
+  },
+  out_clinic_urgent: {
+    type: "outcome", level: "amber", icon: "\ud83e\ude7a",
+    title: "Occupational Health Clinic \u2014 Urgent (Within 1\u20132 Hours)",
+    description: "Major swelling without obvious deformity \u2014 likely a severe sprain or possible hairline fracture. Needs professional evaluation and imaging.",
+    actions: [
+      "Apply R.I.C.E. (Rest, Ice, Compression, Elevation).",
+      "Arrange transport \u2014 employee should not drive if lower limb is affected.",
+      "Complete incident report and workers\u2019 comp forms.",
+      "Request return-to-work restrictions from the clinic.",
+      "If swelling worsens rapidly or pain escalates, upgrade to ER."
+    ]
+  },
+  out_clinic_xray: {
+    type: "outcome", level: "amber", icon: "\ud83e\ude7a",
+    title: "Occupational Health Clinic \u2014 Same Day X-Ray",
+    description: "Point tenderness along a bone or localized bruising warrants an X-ray to rule out hairline fractures that are easy to miss after a fall.",
+    actions: [
+      "Apply ice and limit use of the affected area.",
+      "Schedule a same-day clinic appointment.",
+      "Document the specific location of tenderness and mechanism of fall.",
+      "Assign Light Duty until X-ray results are reviewed.",
+      "Follow up within 24\u201348 hours for clinic findings."
+    ]
+  },
+  out_firstaid: {
+    type: "outcome", level: "green", icon: "\ud83e\ude79",
+    title: "On-Site First Aid \u2014 Monitor Through Shift",
+    description: "The employee appears to have minor injuries only. Administer first aid, but stay vigilant \u2014 adrenaline can mask symptoms.",
+    actions: [
+      "Clean and bandage any scrapes; apply ice to sore areas.",
+      "Complete an incident report (OSHA requirement, even for minor falls).",
+      "Assign Light Duty for the remainder of the shift.",
+      "Mandatory supervisor follow-up call at 4 hours post-incident.",
+      "If ANY new or worsening symptoms appear \u2192 send to Occupational Clinic.",
+      "Inform the employee they may seek medical attention at any time."
+    ]
+  }
+};
+
+var dtHistory = [];
+
+function dtRender(nodeId) {
+  var node = dtTree[nodeId];
+  var container = document.getElementById("dt-content");
+  if (node.type === "outcome") {
+    dtRenderOutcome(node, container);
+    return;
+  }
+  var html = "<div class=\"dt-card\">";
+  html += "<div class=\"dt-step\">Step " + node.step + " \u2014 " + node.label + "</div>";
+  html += "<div class=\"dt-question\">" + node.question + "</div>";
+  html += "<div class=\"dt-btn-row\">";
+  for (var j = 0; j < node.options.length; j++) {
+    var opt = node.options[j];
+    html += "<button class=\"dt-btn\" data-from=\"" + nodeId + "\" data-to=\"" + opt.next + "\">" + opt.label + "</button>";
+  }
+  html += "</div></div>";
+  container.innerHTML = html;
+  var btns = container.querySelectorAll(".dt-btn");
+  for (var k = 0; k < btns.length; k++) {
+    btns[k].addEventListener("click", function() {
+      dtHistory.push(this.getAttribute("data-from"));
+      dtRender(this.getAttribute("data-to"));
+      window.scrollTo({ top: document.querySelector(".tab-bar").offsetTop, behavior: "smooth" });
+    });
+  }
+}
+
+function dtRenderOutcome(node, container) {
+  var actionsHtml = "<ul>";
+  for (var i = 0; i < node.actions.length; i++) {
+    actionsHtml += "<li>" + node.actions[i] + "</li>";
+  }
+  actionsHtml += "</ul>";
+  container.innerHTML = "<div class=\"outcome-card " + node.level + "\">" +
+    "<div class=\"outcome-icon\">" + node.icon + "</div>" +
+    "<h2>" + node.title + "</h2>" +
+    "<p>" + node.description + "</p>" +
+    actionsHtml +
+    "<button class=\"restart-btn\" id=\"dtRestart\">\u21a9 Start Over</button>" +
+    "</div>";
+  document.getElementById("dtRestart").addEventListener("click", function() {
+    dtHistory = [];
+    dtRender("start");
+    window.scrollTo({ top: document.querySelector(".tab-bar").offsetTop, behavior: "smooth" });
+  });
+}
+
+dtRender("start");
+</script>
+</body>
+</html>
